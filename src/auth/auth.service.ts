@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/lib/DTO/auth/user.entity';
 import { UserDTO } from 'src/lib/DTO/auth/userDTO';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt'
 
 
 @Injectable()
@@ -22,7 +23,8 @@ export class AuthService {
     }
     const newUser = new User()
     newUser.userName = body.userName
-    newUser.password = body.password
+    const hashedPassword = await bcrypt.hash(body.password, 5)
+    newUser.password = hashedPassword
     const createdUser = await this.UsersRepository.save(newUser)
     const payload = {
     userId: createdUser.id
@@ -36,6 +38,10 @@ export class AuthService {
     let foundUser = await this.UsersRepository.findOneBy({userName: body.userName})
     if (!foundUser) {
       throw new NotFoundException({message: `User ${body.userName} not found`})
+    }
+    const validPwd = await bcrypt.compare(body.password, foundUser.password)
+    if (!validPwd) {
+      throw new ForbiddenException({message: 'Invalid password'})
     }
     const payload = {
     userId: foundUser.id

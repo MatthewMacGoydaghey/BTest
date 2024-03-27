@@ -16,14 +16,14 @@ export class Rate {
 
   @ApiProperty()
   @ManyToOne(() => Book, {
-    cascade: false
+    onDelete: 'CASCADE'
   })
   @JoinColumn()
   book: Book
 
   @ApiProperty()
   @ManyToOne(() => User, {
-    cascade: false
+    onDelete: 'CASCADE'
   })
   @JoinColumn()
   user: User

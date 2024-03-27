@@ -48,7 +48,6 @@ export class BooksController {
   @ApiResponse({status: 201, type: Book})
   @Post()
   createBook(@Body() body: BookDTO) {
-    console.log(body)
     return this.BooksService.createBook(body)
   }
 

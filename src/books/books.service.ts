@@ -27,7 +27,26 @@ export class BooksService {
 
   async findBooks(pagination: Pagination, filters: UpdateBookDTO) {
     const { take, skip } = pagination
-    const booksArray = await this.BooksRepository.find({take, skip})
+    const booksArray = await this.BooksRepository.createQueryBuilder("book")
+    .leftJoinAndSelect("book.rates", "rate")
+    .select("book.id", "id")
+    .addSelect("book.title", "title")
+    .addSelect("book.year", "year")
+    .addSelect("book.generes", "generes")
+    .addSelect("book.authors", "authors")
+    .addSelect("AVG(rate.rate)", "averageRate")
+    .groupBy("book.id")
+    .orderBy('AVG(rate.rate)', 'DESC', 'NULLS LAST',)
+    .offset(skip)
+    .limit(take)
+    .getRawMany()
+
+    for (let book of booksArray) {
+      if (book.averageRate > 0) {
+        const rate = parseInt(book.averageRate)
+        book.averageRate = rate.toFixed(0)
+      }
+    }
     const filteredBooks = await this.filterBooks(booksArray, filters)
   return filteredBooks
   }
@@ -48,8 +67,7 @@ export class BooksService {
     const newBook = new Book()
     newBook.title = body.title
     newBook.authors = body.authors
-    const currentYear = new Date().getFullYear()
-    newBook.year = currentYear
+    newBook.year = body.year
     newBook.generes = body.generes
     return this.BooksRepository.save(newBook)
   }
@@ -94,7 +112,7 @@ export class BooksService {
   }
 
 
-  
+
   private async filterBooks(booksArray: object[], filters: UpdateBookDTO) {
     const filteredBooks = []
     booksArray.filter(book => {
