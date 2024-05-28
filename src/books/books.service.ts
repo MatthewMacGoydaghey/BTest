@@ -39,16 +39,37 @@ export class BooksService {
     .orderBy('AVG(rate.rate)', 'DESC', 'NULLS LAST',)
     .offset(skip)
     .limit(take)
-    .getRawMany()
 
-    for (let book of booksArray) {
-      if (book.averageRate > 0) {
-        const rate = parseInt(book.averageRate)
-        book.averageRate = rate.toFixed(0)
+   
+   
+      if (filters.year) {
+        booksArray.andWhere(`book.year = :year`, {
+          year: filters.year
+        })
       }
-    }
-    const filteredBooks = await this.filterBooks(booksArray, filters)
-  return filteredBooks
+
+      if (filters.title) {
+        booksArray.andWhere(`book.title = :title`, {
+          title: filters.title
+        })
+      }
+
+        if (filters.authors) {
+          booksArray.andWhere(`book.authors = :authors`, {
+            authors: filters.authors
+          })
+        }
+
+        if (filters.generes) {
+          booksArray.andWhere(`book.generes = :generes`, {
+            generes: filters.generes
+          })
+        }
+    
+    
+  
+   return booksArray.getRawMany()
+
   }
 
 
