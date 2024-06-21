@@ -12,8 +12,8 @@ export class BookDTO {
   year: number
 
   @ApiProperty()
-  @IsArray()
-  generes: string[]
+  @IsString()
+  generes: string
 
   @ApiProperty()
   @IsArray()

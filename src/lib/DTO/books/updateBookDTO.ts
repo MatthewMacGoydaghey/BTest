@@ -13,12 +13,12 @@ class BookDTO {
   year: number
 
   @ApiProperty()
-  @IsArray()
-  generes: string[]
+  @IsString()
+  generes: string
 
   @ApiProperty()
-  @IsArray()
-  authors: string[]
+  @IsString()
+  author: string
 }
 
 
@@ -32,10 +32,14 @@ export class UpdateBookDTO extends PartialType(BookDTO) {
   year: number
 
   @ApiProperty()
-  @IsArray()
-  generes: string[]
+  @IsString()
+  generes: string
 
   @ApiProperty()
-  @IsArray()
-  authors: string[]
+  @IsString()
+  author: string
+
+  @ApiProperty()
+  @IsString()
+  publicationDate: string
 }

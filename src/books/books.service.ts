@@ -1,77 +1,26 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CurrentUserDTO } from 'src/lib/DTO/auth/currentUserDTO';
-import { User } from 'src/lib/DTO/auth/user.entity';
+import { CurrentUserDTO } from 'src/lib/DTO/users/currentUserDTO';
+import { User } from 'src/lib/DTO/users/user.entity';
 import { Book } from 'src/lib/DTO/books/book.entity';
 import { BookDTO } from 'src/lib/DTO/books/bookDTO';
-import { Rate } from 'src/lib/DTO/books/rate.entity';
-import { RateDTO } from 'src/lib/DTO/books/rateDTO';
 import { UpdateBookDTO } from 'src/lib/DTO/books/updateBookDTO';
 import { Repository } from 'typeorm';
 
 
-interface Pagination {
-  skip: number,
-  take: number
-}
-
 @Injectable()
 export class BooksService {
   constructor(
-    @InjectRepository(Book) private readonly BooksRepository: Repository<Book>,
-    @InjectRepository(User) private readonly UsersRepository: Repository<User>,
-    @InjectRepository(Rate) private readonly RatesRepository: Repository<Rate>
+    @InjectRepository(Book) private readonly BooksRepository: Repository<Book>
   ) {}
 
 
 
-  async findBooks(pagination: Pagination, filters: UpdateBookDTO) {
-    const { take, skip } = pagination
-    const booksArray = await this.BooksRepository.createQueryBuilder("book")
-    .leftJoinAndSelect("book.rates", "rate")
-    .select("book.id", "id")
-    .addSelect("book.title", "title")
-    .addSelect("book.year", "year")
-    .addSelect("book.generes", "generes")
-    .addSelect("book.authors", "authors")
-    .addSelect("AVG(rate.rate)", "averageRate")
-    .groupBy("book.id")
-    .orderBy('AVG(rate.rate)', 'DESC', 'NULLS LAST',)
-    .offset(skip)
-    .limit(take)
-
-   
-   
-      if (filters.year) {
-        booksArray.andWhere(`book.year = :year`, {
-          year: filters.year
-        })
-      }
-
-      if (filters.title) {
-        booksArray.andWhere(`book.title = :title`, {
-          title: filters.title
-        })
-      }
-
-        if (filters.authors) {
-          booksArray.andWhere(`book.authors = :authors`, {
-            authors: filters.authors
-          })
-        }
-
-        if (filters.generes) {
-          booksArray.andWhere(`book.generes = :generes`, {
-            generes: filters.generes
-          })
-        }
-    
-    
-  
-   return booksArray.getRawMany()
+  async findBooks() {
+    const booksArray = await this.BooksRepository.find()
+    return booksArray
 
   }
-
 
 
   async findBook(bookID: number) {
@@ -87,8 +36,6 @@ export class BooksService {
   async createBook(body: BookDTO) {
     const newBook = new Book()
     newBook.title = body.title
-    newBook.authors = body.authors
-    newBook.year = body.year
     newBook.generes = body.generes
     return this.BooksRepository.save(newBook)
   }
@@ -97,13 +44,10 @@ export class BooksService {
 
   async updateBook(bookID: number, updateBody: UpdateBookDTO) {
     const foundBook = await this.findBook(bookID)
-    if (!foundBook) {
-      throw new NotFoundException({message: `Book with ID ${bookID} not found`})
-    }
-    foundBook.title = updateBody.title || foundBook.title
-    foundBook.authors = updateBody.authors || foundBook.authors
-    foundBook.generes = updateBody.generes || foundBook.generes
-    foundBook.year = updateBody.year || foundBook.year
+    foundBook.title = updateBody.title
+    foundBook.author = updateBody.author
+    foundBook.generes = updateBody.generes
+    foundBook.publicationDate = updateBody.publicationDate
     return this.BooksRepository.save(foundBook)
   }
 
@@ -114,40 +58,4 @@ export class BooksService {
     const deleted = await this.BooksRepository.delete({id: bookID})
     return `Book with ID ${bookID} has been deleted`
   }
-
-
-
-  async rateBook(bookID: number, rate: RateDTO, user: CurrentUserDTO) {
-    const foundBook = await this.findBook(bookID)
-    const foundUser = await this.UsersRepository.findOneBy({id: user.userID})
-    const newRate = new Rate()
-    newRate.book = foundBook
-    newRate.user = foundUser
-    newRate.rate = rate.rate
-    const rated = await this.RatesRepository.save(newRate)
-    const responseObject = {
-      book: rated.book.title,
-      rate: rated.rate
-    }
-    return responseObject
-  }
-
-
-
-  private async filterBooks(booksArray: object[], filters: UpdateBookDTO) {
-    const filteredBooks = []
-    booksArray.filter(book => {
-    for (let key in filters) {
-    if (Array.isArray(filters[key])) {
-    if (!filters[key].every(value => book[key].includes(value))) {
-    return false
-     }}
-    else {
-    if (book[key] !== filters[key]) {
-    return false
-    }}}
-      filteredBooks.push(book)
-    })
-      return filteredBooks
-    }
 }

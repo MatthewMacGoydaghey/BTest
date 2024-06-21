@@ -10,9 +10,17 @@ id: number
 
 @ApiProperty()
 @Column()
-userName: string
+username: string
 
 @ApiProperty()
 @Column()
 password: string
+
+@ApiProperty()
+@Column()
+email: string
+
+@ApiProperty()
+@Column()
+role: string
 }

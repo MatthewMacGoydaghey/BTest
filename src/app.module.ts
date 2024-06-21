@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BooksModule } from './books/books.module';
-import { User } from './lib/DTO/auth/user.entity';
+import { User } from './lib/DTO/users/user.entity';
 import { Book } from './lib/DTO/books/book.entity';
-import { Rate } from './lib/DTO/books/rate.entity';
+import { UsersModule } from './users/users.module';
+import { EmailVerification } from './lib/DTO/users/emailVerification';
 
 @Module({
   imports: [ConfigModule.forRoot({
@@ -18,9 +18,9 @@ import { Rate } from './lib/DTO/books/rate.entity';
     username: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DB,
-    entities: [User, Book, Rate],
+    entities: [User, EmailVerification, Book],
     synchronize: true,
-  }), AuthModule, BooksModule],
+  }), UsersModule, BooksModule],
   controllers: [],
   providers: [],
 })

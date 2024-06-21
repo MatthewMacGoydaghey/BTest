@@ -1,12 +1,11 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { User } from "../auth/user.entity";
-import { Rate } from "./rate.entity";
+import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { User } from "../users/user.entity";
 import { ApiProperty } from "@nestjs/swagger";
 
 
 @Entity()
 export class Book {
-  @ApiProperty()
+@ApiProperty()
 @PrimaryGeneratedColumn()
 id: number
 
@@ -16,16 +15,13 @@ title: string
 
 @ApiProperty()
 @Column()
-year: number
+generes: string
 
 @ApiProperty()
-@Column("text", {array: true})
-generes: string[]
+@Column()
+author: string
 
 @ApiProperty()
-@Column("text", {array: true})
-authors: string[]
-
-@OneToMany(() => Rate, (rate) => rate.book)
-rates: Rate[]
+@CreateDateColumn()
+publicationDate: string
 }
