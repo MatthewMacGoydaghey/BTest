@@ -1,1 +1,1 @@
-http://localhost:5555/api#/
+http://localhost:5555/api
